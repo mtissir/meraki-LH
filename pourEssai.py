@@ -25,6 +25,8 @@ def getorgid(p_apikey, p_orgname):
 			return record['id']
 	return('null')
 
+# coller ici la fonction getnwid
+
 # This function return the list of networks that are specified in the file.
 def readCsv(fileName):
 	readNetworks = []
@@ -35,14 +37,28 @@ def readCsv(fileName):
 		return(readNetworks)
 
 # This function create the Network
-def addNetwork(parameters):
+def addNetwork(parameters, p_apikey):
 
 	# Check all parameters are present 
 
-	# retrieve the Organisation ID
+	
 	for parameter in parameters:
-		orgid = getorgid('eec14f52ff0eac69260516253842f296ef9e0e2c',parameter['Organization'])
+		# Retrieve the Organisation ID. If null print ERROR and exit	
+		orgid = getorgid(p_apikey,parameter['Organization'])
 		print(orgid)
+
+		if orgid == 'null':
+			print('ERROR: The Organization name provided does not exit')
+			sys.exit(2)
+
+		# Check if a network exits with the name provided. If yes, print ERROR and exit. Otherwise, create the network.
+		checkIfExist = getnwid(p_apikey, p_orgid, p_nwname)
+		if checkIfExist == 'null':
+			print('ERROR: A network with the name %s already exists. Please choose another name' %p_nwname)
+			sys.exit(2)
+		else:
+			# Create the Network
+			
 
 
 
@@ -52,10 +68,11 @@ def main(argv):
 
 	#intialize variables for command line argument
 	fileName = ''
+	apiKey = ''
 
-	#get command line argument
+	#get command line argument. If the option provided is not part of available option, print help and exit
 	try:
-		opts, args = getopt.getopt(argv,'f:')
+		opts, args = getopt.getopt(argv,'f:k:')
 	except getopt.GetoptError:
 		printhelp()
 		sys.exit(2)
@@ -63,11 +80,15 @@ def main(argv):
 	for opt, arg in opts:
 		if opt == '-f':
 			fileName = arg
+		if opt == '-k':
+			apiKey = arg
 
 	networks = readCsv(arg)
-	#print(networks[0]['Nom'])
-	#print(len(networks))
-	addNetwork(networks)
+	
+	# Check if parameters provided in the CSV file are correct
+	# faire ici une fonction qui vérifie les paramètres
+
+	addNetwork(networks,apiKey)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
